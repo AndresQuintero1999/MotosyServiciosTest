@@ -21,3 +21,4 @@ requests==2.32.3
 
 # --- Calidad ---
 pytest==8.3.4
+httpx==0.27.2               # requerido por fastapi.testclient

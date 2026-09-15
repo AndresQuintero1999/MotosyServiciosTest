@@ -48,7 +48,20 @@ class Config:
     schema_path: Path = RAIZ / "db" / "schema.sql"
     api_host: str = os.getenv("API_HOST", "0.0.0.0")
     api_port: int = _int("API_PORT", 8000)
+    api_internal_url: str = os.getenv("API_INTERNAL_URL", "")
+    admin_token: str = os.getenv("ADMIN_TOKEN", "")
     ia: ConfigIA = ConfigIA()
+
+    @property
+    def tokens_empresa(self) -> dict[str, str]:
+        """token -> empresa_id, leído de API_TOKEN_EMP_01/02/03."""
+        mapa = {}
+        for empresa_id in ("EMP-01", "EMP-02", "EMP-03"):
+            var = f"API_TOKEN_{empresa_id.replace('-', '_')}"
+            token = os.getenv(var)
+            if token:
+                mapa[token] = empresa_id
+        return mapa
 
 
 CFG = Config()
