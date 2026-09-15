@@ -1,0 +1,39 @@
+# --- Secretos: nunca versionar llaves de API ---
+.env
+.env.local
+*.key
+
+# --- Base de datos generada por el pipeline ---
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+data/warehouse/
+
+# --- Artefactos del pipeline ---
+data/cache/
+logs/
+*.log
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+
+# --- Streamlit ---
+.streamlit/secrets.toml
+
+# --- Editores / SO ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
