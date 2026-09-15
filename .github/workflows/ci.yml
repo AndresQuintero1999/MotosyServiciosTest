@@ -1,0 +1,41 @@
+name: CI
+
+# Corre en cada push/PR: reconstruye el warehouse desde los datasets
+# versionados (extractor de reglas, sin costo ni dependencia de un
+# proveedor externo) y corre toda la suite de pruebas sobre datos reales,
+# no mocks. Un pipeline que solo se probó "en teoría" no demuestra nada.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar el pipeline (extractor de reglas, sin llamadas a IA)
+        env:
+          IA_HABILITADA: "false"
+        run: python -m src.pipeline
+
+      - name: Pruebas unitarias e integración
+        # Los mismos valores de .env.example: son tokens de demostración,
+        # no credenciales reales, así que es seguro fijarlos aquí.
+        # tests/test_api.py los referencia por este mismo valor literal.
+        env:
+          IA_HABILITADA: "false"
+          ADMIN_TOKEN: demo-admin-token
+          API_TOKEN_EMP_01: demo-token-emp-01
+          API_TOKEN_EMP_02: demo-token-emp-02
+          API_TOKEN_EMP_03: demo-token-emp-03
+        run: pytest tests/ -v

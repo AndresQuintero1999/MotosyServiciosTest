@@ -1,0 +1,37 @@
+name: Refrescar cola de leads (programado / manual)
+
+# Satisface la condicion de "ejecucion programada o disparada por evento"
+# contra la instancia YA DESPLEGADA: no reconstruye nada en CI, solo llama
+# al webhook de administracion (POST /admin/pipeline/run) para que el
+# propio servicio vuelva a correr su pipeline de punta a punta.
+#
+# - schedule: corre sola todos los dias sin que nadie la dispare a mano.
+# - workflow_dispatch: boton "Run workflow" en la pestaña Actions, para
+#   disparar una corrida en vivo durante la sustentacion.
+#
+# Requiere dos secretos del repositorio (Settings > Secrets and variables
+# > Actions), configurados despues del despliegue:
+#   APP_URL      -> ej. https://motos-leads-organizador.onrender.com
+#   ADMIN_TOKEN  -> el mismo valor que ADMIN_TOKEN en el servicio desplegado
+
+on:
+  schedule:
+    - cron: "0 11 * * *"  # 06:00 hora Colombia (UTC-5)
+  workflow_dispatch: {}
+
+jobs:
+  disparar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verificar que el servicio esté vivo
+        run: |
+          curl -sf "${{ secrets.APP_URL }}/salud" || {
+            echo "::error::El servicio no respondió en /salud. ¿Está desplegado y despierto?"
+            exit 1
+          }
+
+      - name: Disparar el pipeline via webhook
+        run: |
+          respuesta=$(curl -sf -X POST "${{ secrets.APP_URL }}/admin/pipeline/run" \
+            -H "Authorization: Bearer ${{ secrets.ADMIN_TOKEN }}")
+          echo "Respuesta: $respuesta"
