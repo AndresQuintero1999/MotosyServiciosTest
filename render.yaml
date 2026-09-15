@@ -1,0 +1,48 @@
+# Blueprint de despliegue en Render (https://render.com/docs/blueprint-spec).
+# Un solo servicio web: API interna + tablero público (ver run_server.py).
+#
+# Uso: en Render, "New +" -> "Blueprint", apuntar a este repositorio.
+# Completar las variables marcadas como `sync: false` en el panel de Render
+# (nunca se versionan acá: son secretos).
+
+services:
+  - type: web
+    name: motos-leads-organizador
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python run_server.py"
+    healthCheckPath: /_stcore/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: DIR_DATASETS
+        value: datasets-assessment-analista-ia
+      - key: DB_PATH
+        value: data/warehouse/leads.db
+      - key: API_PORT
+        value: "8000"
+      - key: API_INTERNAL_URL
+        value: http://127.0.0.1:8000
+      - key: IA_BASE_URL
+        value: https://openrouter.ai/api/v1
+      - key: IA_MODELO
+        value: "meta-llama/llama-3.3-70b-instruct:free"
+      - key: IA_HABILITADA
+        value: "true"
+      - key: IA_CONCURRENCIA
+        value: "4"
+      - key: IA_API_KEY
+        sync: false
+      - key: ADMIN_TOKEN
+        sync: false
+      - key: API_TOKEN_EMP_01
+        sync: false
+      - key: API_TOKEN_EMP_02
+        sync: false
+      - key: API_TOKEN_EMP_03
+        sync: false
+    # Sin disco persistente a propósito: el plan free de Render no lo
+    # ofrece, y no hace falta. El pipeline es idempotente (ver src/db.py)
+    # y run_server.py reconstruye la base de datos desde los datasets
+    # versionados en el propio repo si no la encuentra al arrancar.
